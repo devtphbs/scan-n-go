@@ -39,11 +39,29 @@
             </section>
 
             <section class="cart-section">
-                <h2>Shopping Cart</h2>
+                <div class="cart-header">
+                    <h2>Shopping Cart</h2>
+                    <select id="display-currency" class="currency-select">
+                        <option value="USD">USD ($)</option>
+                        <option value="EUR">EUR (€)</option>
+                        <option value="GBP">GBP (£)</option>
+                        <option value="CHF">CHF</option>
+                        <option value="SEK">SEK (kr)</option>
+                        <option value="NOK">NOK (kr)</option>
+                        <option value="DKK">DKK (kr)</option>
+                        <option value="PLN">PLN (zł)</option>
+                        <option value="CZK">CZK (Kč)</option>
+                        <option value="HUF">HUF (Ft)</option>
+                        <option value="RON">RON (lei)</option>
+                        <option value="BGN">BGN (лв)</option>
+                        <option value="HRK">HRK (kn)</option>
+                        <option value="ISK">ISK (kr)</option>
+                    </select>
+                </div>
                 <div id="cart-items" class="cart-items"></div>
                 <div class="cart-summary">
                     <div class="total">
-                        <strong>Total: $<span id="total-price">0.00</span></strong>
+                        <strong>Total: <span id="total-price">$0.00</span></strong>
                     </div>
                     <button id="clear-cart" class="btn btn-danger">Clear Cart</button>
                     <button id="checkout" class="btn btn-success">Checkout</button>

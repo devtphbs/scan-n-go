@@ -37,8 +37,27 @@
                         <input type="text" id="productName" name="name" required>
                     </div>
                     <div class="form-group">
-                        <label for="productPrice">Price ($)</label>
+                        <label for="productPrice">Price</label>
                         <input type="number" id="productPrice" name="price" step="0.01" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="productCurrency">Currency</label>
+                        <select id="productCurrency" name="currency" required>
+                            <option value="USD">USD - US Dollar</option>
+                            <option value="EUR">EUR - Euro</option>
+                            <option value="GBP">GBP - British Pound</option>
+                            <option value="CHF">CHF - Swiss Franc</option>
+                            <option value="SEK">SEK - Swedish Krona</option>
+                            <option value="NOK">NOK - Norwegian Krone</option>
+                            <option value="DKK">DKK - Danish Krone</option>
+                            <option value="PLN">PLN - Polish Zloty</option>
+                            <option value="CZK">CZK - Czech Koruna</option>
+                            <option value="HUF">HUF - Hungarian Forint</option>
+                            <option value="RON">RON - Romanian Leu</option>
+                            <option value="BGN">BGN - Bulgarian Lev</option>
+                            <option value="HRK">HRK - Croatian Kuna</option>
+                            <option value="ISK">ISK - Icelandic Krona</option>
+                        </select>
                     </div>
                     <div class="form-group">
                         <label for="productImage">Product Image</label>

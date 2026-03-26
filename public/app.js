@@ -24,6 +24,7 @@ const cartItems = document.getElementById('cart-items');
 const totalPrice = document.getElementById('total-price');
 const clearCartBtn = document.getElementById('clear-cart');
 const checkoutBtn = document.getElementById('checkout');
+const displayCurrencySelect = document.getElementById('display-currency');
 
 // Initialize app
 document.addEventListener('DOMContentLoaded', async () => {
@@ -159,6 +160,63 @@ function showScanResult(message, type) {
     scanResult.className = `scan-result ${type}`;
 }
 
+// Currency conversion rates (approximate - in production, use an API)
+const CURRENCY_RATES = {
+    'USD': 1,
+    'EUR': 0.92,
+    'GBP': 0.79,
+    'CHF': 0.88,
+    'SEK': 10.35,
+    'NOK': 10.52,
+    'DKK': 6.91,
+    'PLN': 3.97,
+    'CZK': 22.80,
+    'HUF': 346.50,
+    'RON': 4.60,
+    'BGN': 1.80,
+    'HRK': 7.00,
+    'ISK': 138.50
+};
+
+const CURRENCY_SYMBOLS = {
+    'USD': '$',
+    'EUR': '€',
+    'GBP': '£',
+    'CHF': 'CHF',
+    'SEK': 'kr',
+    'NOK': 'kr',
+    'DKK': 'kr',
+    'PLN': 'zł',
+    'CZK': 'Kč',
+    'HUF': 'Ft',
+    'RON': 'lei',
+    'BGN': 'лв',
+    'HRK': 'kn',
+    'ISK': 'kr'
+};
+
+// Display currency (can be changed by user preference)
+let displayCurrency = localStorage.getItem('scanngo_display_currency') || 'USD';
+
+// Convert price to display currency
+function convertPrice(price, fromCurrency, toCurrency = displayCurrency) {
+    if (fromCurrency === toCurrency) return price;
+    const rateFrom = CURRENCY_RATES[fromCurrency] || 1;
+    const rateTo = CURRENCY_RATES[toCurrency] || 1;
+    return (price / rateFrom) * rateTo;
+}
+
+// Format price with currency symbol
+function formatPrice(price, currency = displayCurrency) {
+    const symbol = CURRENCY_SYMBOLS[currency] || '$';
+    if (['SEK', 'NOK', 'DKK', 'ISK'].includes(currency)) {
+        return `${price.toFixed(2)} ${symbol}`;
+    } else if (['PLN', 'CZK', 'HUF', 'RON', 'BGN', 'HRK'].includes(currency)) {
+        return `${price.toFixed(2)} ${symbol}`;
+    }
+    return `${symbol}${price.toFixed(2)}`;
+}
+
 // Cart functionality
 function loadCart() {
     const savedCart = localStorage.getItem('scanngo-cart');
@@ -216,7 +274,8 @@ function clearCart() {
 function calculateTotal() {
     return cart.reduce((total, item) => {
         const price = calculateDiscountedPrice(item);
-        return total + (price * item.quantity);
+        const convertedPrice = convertPrice(price, item.currency || 'USD', displayCurrency);
+        return total + (convertedPrice * item.quantity);
     }, 0);
 }
 
@@ -241,19 +300,21 @@ function updateCartUI() {
                 <div class="empty-state-subtext">Scan products to add them to your cart</div>
             </div>
         `;
-        totalPrice.textContent = '0.00';
+        totalPrice.textContent = formatPrice(0);
         return;
     }
 
     cart.forEach(item => {
         const finalPrice = calculateDiscountedPrice(item);
+        const convertedPrice = convertPrice(finalPrice, item.currency || 'USD', displayCurrency);
+        const originalPrice = convertPrice(item.price, item.currency || 'USD', displayCurrency);
         const cartItem = document.createElement('div');
         cartItem.className = 'cart-item';
         cartItem.innerHTML = `
             <img src="${item.image || 'https://picsum.photos/seed/' + item.id + '/60/60.jpg'}" alt="${item.name}">
             <div class="cart-item-info">
                 <div class="cart-item-name">${item.name}</div>
-                <div class="cart-item-price">$${finalPrice.toFixed(2)}</div>
+                <div class="cart-item-price">${formatPrice(convertedPrice)} ${item.currency && item.currency !== displayCurrency ? `<small>(${item.currency})</small>` : ''}</div>
                 <div class="cart-item-stock">Stock: ${item.stock}</div>
                 ${item.discount_type !== 'none' ? `<div class="discount">${item.discount_type === 'percent' ? (item.discount_value * 100).toFixed(0) + '% off' : ''}</div>` : ''}
             </div>
@@ -269,7 +330,7 @@ function updateCartUI() {
         cartItems.appendChild(cartItem);
     });
 
-    totalPrice.textContent = calculateTotal().toFixed(2);
+    totalPrice.textContent = formatPrice(calculateTotal());
 }
 
 // Realtime subscription
@@ -345,6 +406,18 @@ function setupEventListeners() {
         }
     });
 
+    // Currency selector
+    if (displayCurrencySelect) {
+        // Set initial value
+        displayCurrencySelect.value = displayCurrency;
+        
+        displayCurrencySelect.addEventListener('change', (e) => {
+            displayCurrency = e.target.value;
+            localStorage.setItem('scanngo_display_currency', displayCurrency);
+            updateCartUI();
+        });
+    }
+
     checkoutBtn.addEventListener('click', async () => {
         if (cart.length === 0) {
             alert('Your cart is empty!');
@@ -355,7 +428,7 @@ function setupEventListeners() {
         
         if (!stripe) {
             // Demo mode - no Stripe key configured
-            const message = `Checkout Total: $${total.toFixed(2)}\n\nStripe not configured. This is demo mode.`;
+            const message = `Checkout Total: ${formatPrice(total)}\n\nStripe not configured. This is demo mode.`;
             if (confirm(message)) {
                 alert('Thank you for your purchase! (Demo mode)');
                 clearCart();
@@ -363,25 +436,49 @@ function setupEventListeners() {
             return;
         }
 
-        // Real Stripe checkout
+        // Real Stripe checkout - create session directly
         try {
             checkoutBtn.disabled = true;
             checkoutBtn.textContent = 'Processing...';
 
-            // Create checkout session via Supabase Edge Function or direct API
-            const { data: session, error } = await window.supabaseClient.functions.invoke('create-checkout', {
-                body: {
-                    items: cart.map(item => ({
-                        name: item.name,
-                        price: item.price,
-                        quantity: item.quantity
-                    })),
-                    success_url: window.location.origin + '/success.html',
-                    cancel_url: window.location.origin
-                }
+            // Convert all cart items to USD for Stripe
+            const lineItems = cart.map(item => {
+                const usdPrice = convertPrice(item.price, item.currency || 'USD', 'USD');
+                return {
+                    price_data: {
+                        currency: 'usd',
+                        product_data: { name: item.name },
+                        unit_amount: Math.round(usdPrice * 100), // Convert to cents
+                    },
+                    quantity: item.quantity
+                };
             });
 
-            if (error) throw error;
+            // Check if Edge Function exists, if not use fallback
+            let session;
+            try {
+                const { data, error } = await window.supabaseClient.functions.invoke('create-checkout', {
+                    body: {
+                        items: lineItems,
+                        success_url: window.location.origin + '/success.html',
+                        cancel_url: window.location.origin
+                    }
+                });
+                if (error) throw error;
+                session = data;
+            } catch (funcError) {
+                // Edge Function not available - use demo mode for now
+                console.warn('Edge Function not available, using demo mode');
+                const totalUSD = convertPrice(total, displayCurrency, 'USD');
+                const message = `Checkout Total: ${formatPrice(total)} (${formatPrice(totalUSD, 'USD')})\n\nPayment processing not yet configured. This is demo mode.`;
+                if (confirm(message)) {
+                    alert('Thank you for your purchase! (Demo mode)');
+                    clearCart();
+                }
+                checkoutBtn.disabled = false;
+                checkoutBtn.textContent = 'Checkout';
+                return;
+            }
 
             // Redirect to Stripe Checkout
             const result = await stripe.redirectToCheckout({

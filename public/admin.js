@@ -14,6 +14,7 @@ const barcodeCanvas = document.getElementById('barcode-canvas');
 const barcodeNumber = document.getElementById('barcode-number');
 const productImageInput = document.getElementById('productImage');
 const imagePreview = document.getElementById('imagePreview');
+const productCurrency = document.getElementById('productCurrency');
 
 // Initialize admin panel
 document.addEventListener('DOMContentLoaded', async () => {
@@ -128,6 +129,7 @@ async function handleAddProduct(e) {
             barcode: barcode,
             name: formData.get('name'),
             price: parseFloat(formData.get('price')),
+            currency: formData.get('currency') || 'USD',
             image: imageUrl,
             stock: parseInt(formData.get('stock')),
             discount_type: formData.get('discount_type'),
@@ -227,6 +229,7 @@ async function editProduct(productId) {
     // Fill form with product data
     document.getElementById('productName').value = product.name;
     document.getElementById('productPrice').value = product.price;
+    document.getElementById('productCurrency').value = product.currency || 'USD';
     // Don't set file input value - instead show image preview if exists
     if (product.image) {
         imagePreview.src = product.image;
@@ -285,6 +288,7 @@ async function handleUpdateProduct(e, productId) {
         const updateData = {
             name: formData.get('name'),
             price: parseFloat(formData.get('price')),
+            currency: formData.get('currency') || 'USD',
             stock: parseInt(formData.get('stock')),
             discount_type: formData.get('discount_type'),
             discount_value: formData.get('discount_value') ? parseFloat(formData.get('discount_value')) : 0
@@ -357,6 +361,11 @@ function resetFormToAddMode() {
     generatedBarcode.style.display = 'none';
     imagePreview.style.display = 'none';
     imagePreview.src = '';
+    
+    // Reset currency to USD
+    if (productCurrency) {
+        productCurrency.value = 'USD';
+    }
 }
 
 // Global functions for onclick handlers
