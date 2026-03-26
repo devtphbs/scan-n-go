@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Scan & Go</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚙️</text></svg>">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+    <script>
+        // Initialize Supabase (only if not already defined by CDN)
+        const SUPABASE_URL = 'https://zsnzfbphhomncutpbegw.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpzbnpmYnBoaG9tbmN1dHBiZWd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2Njk2MDAsImV4cCI6MjA4OTI0NTYwMH0.P6biybUkJ1apbzi8KoRjeN4jbkyxIGQmEBhge25XIK8';
+        if (typeof window.supabaseClient === 'undefined') {
+            window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🛒 Scan & Go Admin</h1>
+            <div class="user-info">
+                <span id="userEmail"></span>
+                <button id="logoutBtn" class="btn btn-secondary">Logout</button>
+                <a href="index.html" class="btn btn-primary">Back to Scanner</a>
+            </div>
+        </header>
+
+        <main>
+            <section class="admin-section">
+                <h2>Add New Product</h2>
+                <form id="product-form" class="product-form">
+                    <div class="form-group">
+                        <label for="productName">Product Name</label>
+                        <input type="text" id="productName" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="productPrice">Price ($)</label>
+                        <input type="number" id="productPrice" name="price" step="0.01" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="productImage">Product Image</label>
+                        <input type="file" id="productImage" name="image" accept="image/*">
+                        <img id="imagePreview" src="" alt="Preview" style="display:none; max-width: 200px; margin-top: 10px;">
+                    </div>
+                    <div class="form-group">
+                        <label for="productStock">Stock Quantity</label>
+                        <input type="number" id="productStock" name="stock" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="discountType">Discount Type</label>
+                        <select id="discountType" name="discount_type">
+                            <option value="none">None</option>
+                            <option value="percent">Percentage</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="discountValue">Discount Value</label>
+                        <input type="number" id="discountValue" name="discount_value" step="0.01" min="0" max="1" placeholder="0.2 for 20%">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Product</button>
+                </form>
+
+                <div id="generated-barcode" class="barcode-display" style="display:none;">
+                    <h3>Generated Barcode</h3>
+                    <canvas id="barcode-canvas"></canvas>
+                    <p id="barcode-number"></p>
+                </div>
+            </section>
+
+            <section class="products-section">
+                <h2>Product List</h2>
+                <div id="products-list" class="products-grid"></div>
+            </section>
+        </main>
+    </div>
+
+    <script src="lib/barcode.js"></script>
+    <script src="admin.js"></script>
+</body>
+</html>

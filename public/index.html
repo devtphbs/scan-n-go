@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scan & Go - Grocery Scanner</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📷</text></svg>">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://js.stripe.com/v3/"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+    <script>
+        // Initialize Supabase (only if not already defined by CDN)
+        const SUPABASE_URL = 'https://zsnzfbphhomncutpbegw.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpzbnpmYnBoaG9tbmN1dHBiZWd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2Njk2MDAsImV4cCI6MjA4OTI0NTYwMH0.P6biybUkJ1apbzi8KoRjeN4jbkyxIGQmEBhge25XIK8';
+        if (typeof window.supabaseClient === 'undefined') {
+            window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🛒 Scan & Go</h1>
+            <div class="user-info">
+                <span id="userEmail">Not logged in</span>
+                <button id="loginBtn" class="btn btn-secondary">Login</button>
+                <button id="logoutBtn" class="btn btn-secondary" style="display:none;">Logout</button>
+                <button id="adminBtn" class="btn btn-primary" style="display:none;">Admin</button>
+            </div>
+        </header>
+
+        <main>
+            <section class="scanner-section">
+                <h2>Scan Product</h2>
+                <div id="qr-reader"></div>
+                <div id="scan-result" class="scan-result"></div>
+            </section>
+
+            <section class="cart-section">
+                <h2>Shopping Cart</h2>
+                <div id="cart-items" class="cart-items"></div>
+                <div class="cart-summary">
+                    <div class="total">
+                        <strong>Total: $<span id="total-price">0.00</span></strong>
+                    </div>
+                    <button id="clear-cart" class="btn btn-danger">Clear Cart</button>
+                    <button id="checkout" class="btn btn-success">Checkout</button>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="lib/barcode.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
